@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Bayar via GoPay</title>
+  <style>
+    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; display:flex; align-items:center; justify-content:center; min-height:100vh; margin:0; background:#f5f5f7; }
+    .card { background:white; padding:20px; border-radius:12px; box-shadow:0 6px 18px rgba(0,0,0,0.08); width:320px; text-align:center; }
+    button { background:#00a170; color:white; border:0; padding:12px 18px; border-radius:10px; font-size:16px; cursor:pointer; }
+    .note { font-size:13px; color:#555; margin-top:10px; }
+    .qr { margin-top:12px; }
+    a.small { display:inline-block; margin-top:8px; color:#0077cc; font-size:13px; text-decoration:none; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h3>Bayar via GoPay</h3>
+    <p>Transfer <strong>Rp20.000</strong> ke <strong>0895343157218</strong></p>
+    <button id="payBtn">Buka GoPay &nbsp;▶</button>
+
+    <div class="note">
+      Jika GoPay tidak terbuka, scan QR di bawah atau klik "Buka di web".
+    </div>
+
+    <div class="qr" id="qrContainer">
+      <!-- QR akan di-render di sini sebagai fallback -->
+      <img id="qrImg" alt="QR GoPay fallback" style="max-width:100%; border-radius:8px;" />
+    </div>
+
+    <a id="webFallback" class="small" href="#" target="_blank" rel="noreferrer">Buka di web / Payment link</a>
+  </div>
+
+  <script>
+    (function(){
+      // DATA yang diminta user
+      const phone = "0895343157218";
+      const amount = 20000; // dalam Rupiah
+
+      // URL fallback (web) — ini adalah URL yang kita pakai untuk QR / web fallback.
+      // Catatan: format ini hanya contoh praktis. Untuk produksi, gunakan GoPay Payment Links
+      // atau integrasi resmi (Midtrans / GoPay API) agar terisi otomatis dan aman.
+      const fallbackWebUrl = `https://gopay.co.id/app/merchanttransfer?phone=${encodeURIComponent(phone)}&amount=${encodeURIComponent(amount)}`;
+
+      // Coba buka beberapa skema deeplink (beberapa client mungkin memakai gopay:// atau gojek://)
+      const deeplinks = [
+        `gopay://pay?phone=${phone}&amount=${amount}`,
+        `gojek://gopay/pay?phone=${phone}&amount=${amount}`,
+        `gopay://merchanttransfer?phone=${phone}&amount=${amount}`,
+        `https://gopay.co.id/app/merchanttransfer?phone=${phone}&amount=${amount}`
+      ];
+
+      const btn = document.getElementById('payBtn');
+      const qrImg = document.getElementById('qrImg');
+      const webFallback = document.getElementById('webFallback');
+      webFallback.href = fallbackWebUrl;
+
+      // Render QR image (meng-encode fallbackWebUrl). Menggunakan Google Chart API (sederhana).
+      // Kalau mau QR resmi/QRIS dinamis, sebaiknya buat via API GoPay / penyedia resmi.
+      const qrData = encodeURIComponent(fallbackWebUrl);
+      qrImg.src = `https://chart.googleapis.com/chart?cht=qr&chs=300x300&chld=M|1&chl=${qrData}`;
+
+      function tryOpenDeepLink(url) {
+        // Metode sederhana: ganti location, dan set fallback setelah delay.
+        // Perlu diketahui: beberapa browser (Chrome on Android) akan menampilkan interstitial "Open app?"
+        window.location = url;
+      }
+
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+
+        // Coba jalankan deeplink berurutan dengan jeda singkat.
+        // Jika app tidak terpasang, browser biasanya akan tetap stay di halaman,
+        // dan kita tetap memberikan link web / QR sebagai fallback.
+        for (let i = 0; i < deeplinks.length; i++) {
+          // memberinya jeda sedikit agar sistem memiliki kesempatan memproses
+          setTimeout(() => {
+            tryOpenDeepLink(deeplinks[i]);
+          }, i * 250);
+        }
+
+        // Selain itu, tunjukkan instruksi kecil setelah klik
+        btn.textContent = "Membuka GoPay… jika tidak, gunakan QR/Link di bawah";
+        btn.disabled = true;
+        setTimeout(() => { btn.disabled = false; btn.textContent = "Buka GoPay ▶"; }, 3500);
+      });
+    })();
+  </script>
+</body>
+</html>
