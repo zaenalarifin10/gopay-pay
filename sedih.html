@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Search Button</title>
+  <style>
+    body { font-family: Arial, sans-serif; display:flex; height:100vh; align-items:center; justify-content:center; background:#f5f5f5; }
+    button { padding:12px 20px; font-size:16px; border-radius:8px; border:none; cursor:pointer; box-shadow:0 4px 10px rgba(0,0,0,0.1); }
+  </style>
+</head>
+<body>
+  <button id="searchBtn">Cari: "ayah ku ternyata ibu ku"</button>
+
+  <script>
+    const query = 'ayah ku ternyata ibu ku';
+    document.getElementById('searchBtn').addEventListener('click', () => {
+      const url = 'https://www.google.com/search?q=' + encodeURIComponent(query);
+      // buka di tab baru, gunakan noopener untuk keamanan
+      window.open(url, '_blank', 'noopener,noreferrer');
+    });
+  </script>
+</body>
+</html>
